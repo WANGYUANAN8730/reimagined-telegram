@@ -26,6 +26,7 @@ using clang::ast_matchers::materializeTemporaryExpr;
 using clang::ast_matchers::parmVarDecl;
 using clang::ast_matchers::qualType;
 using clang::ast_matchers::references;
+using clang::ast_matchers::referenceType;
 using clang::ast_matchers::to;
 using clang::ast_matchers::varDecl;
 using clang::ast_matchers::withInitializer;
@@ -33,7 +34,7 @@ using clang::ast_matchers::withInitializer;
 const auto kPassesTempToMemoizedRef = forEachArgumentWithParam(
     expr(hasParent(materializeTemporaryExpr())).bind("Problem"),
     parmVarDecl(equalsBoundNode("ParmVar")));
-const auto kForRefField = forField(hasType(references(qualType())));
+const auto kForRefField = forField(hasType(referenceType()));
 const auto kSpecialCtor =
     cxxConstructorDecl(forEachConstructorInitializer(cxxCtorInitializer(
         kForRefField,
@@ -47,11 +48,10 @@ const auto kMatcher =
 struct Yolo : MatchFinder::MatchCallback {
   void run(const MatchFinder::MatchResult& result) override {
     auto temporary = result.Nodes.getNodeAs<clang::Expr>("Problem");
-    auto root = result.Nodes.getNodeAs<clang::ExprWithCleanups>("root");
 
     auto var = result.Nodes.getNodeAs<clang::VarDecl>("Var");
 
-    std::string kString = var->getName();
+    std::string kString{var->getName()};
 
     const clang::SourceRange& range = temporary->getSourceRange();
     clang::TextDiagnostic TD(
