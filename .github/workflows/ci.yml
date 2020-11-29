@@ -23,6 +23,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .github/actions/hello
+          file: .github/actions/hello/Dockerfile
           load: true
           tags: yolo/dev
           cache-from: type=local,src=/tmp/.buildx-cache
