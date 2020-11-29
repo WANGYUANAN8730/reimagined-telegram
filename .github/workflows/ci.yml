@@ -9,5 +9,23 @@ jobs:
       - uses: actions/checkout@master
       - name: spy
         run: free -m && nproc
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          context: .github/actions/hello
+          load: true
+          tags: yolo/dev
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
       - name: hello
         uses: ./.github/actions/hello
